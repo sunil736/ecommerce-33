@@ -20,23 +20,37 @@ const Product = () => {
     dispatch(addCart(product));
   };
 
-  useEffect(() => {
-    const getProduct = async () => {
-      setLoading(true);
-      setLoading2(true);
-      const response = await fetch(`https://fakestoreapi.com/products/${id}`);
-      const data = await response.json();
-      setProduct(data);
-      setLoading(false);
-      const response2 = await fetch(
-        `https://fakestoreapi.com/products/category/${data.category}`
-      );
-      const data2 = await response2.json();
-      setSimilarProducts(data2);
-      setLoading2(false);
-    };
-    getProduct();
-  }, [id]);
+
+
+const componentMounted = useRef(true); // ✅
+
+useEffect(() => {
+  componentMounted.current = true;
+
+  const getProduct = async () => {
+    setLoading(true);
+    setLoading2(true);
+
+    const response = await fetch(`https://fakestoreapi.com/products/${id}`);
+    const data = await response.json();
+    if (componentMounted.current) setProduct(data);
+    setLoading(false);
+
+    const response2 = await fetch(
+      `https://fakestoreapi.com/products/category/${data.category}`
+    );
+    const data2 = await response2.json();
+    if (componentMounted.current) setSimilarProducts(data2);
+    setLoading2(false);
+  };
+
+  getProduct();
+
+  return () => {
+    componentMounted.current = false; // cleanup
+  };
+}, [id]);
+
 
   const Loading = () => {
     return (
